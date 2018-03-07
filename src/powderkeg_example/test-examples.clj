@@ -4,6 +4,7 @@
    [net.cgrand.xforms :as x]))
 
 (keg/connect! "local[2]")
+;; (keg/connect! "spark://localhost:7077")
 
 (into [] ; no collect, plain Clojure
       (keg/rdd ["This is a firest line"  ; here we provide data from a clojure collection.
