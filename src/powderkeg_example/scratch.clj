@@ -1,7 +1,9 @@
 (ns powderkeg-example.scratch
   (:require
+   [clojure.java.io :as io]
    [powderkeg.core :as keg]
    [clojure.math.combinatorics :as comb]
+   ;; [t6.from-scala.core :refer [$ $$] :as $]
    [net.cgrand.xforms :as x])
   (:import
    [org.apache.spark.sql SparkSession SQLContext]
@@ -88,5 +90,9 @@
 (.saveAsObjectFile occs "~/emag/powderkeg-example/data/occs.bin")
 
 
+(with-open [w (io/writer "occurrences.csv")] 
+  (keg/rdd occs
+           (x/for [v %] (.write w (format "%d,%d,%d" (ffirst v) (second (first v)) (second v) ))))
+)
 
-
+(keg/scomp)

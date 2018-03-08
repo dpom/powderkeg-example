@@ -7,6 +7,8 @@
         hcadatalab/powderkeg {:mvn/version "0.5.1"
                               :exclusions [org.codehaus.plexus/plexus-utils
                                            commons-codec]}
+        t6/from-scala {:mvn/version "0.2.1"}
+        org.scala-lang/scala-library {:mvn/version "2.11.6"}
         com.esotericsoftware/kryo-shaded {:mvn/version "4.0.0"}  ;; For Spark 2.x support
         org.apache.spark/spark-core_2.11 {:mvn/version "2.1.0"
                                           :exclusions [commons-net
