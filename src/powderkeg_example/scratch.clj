@@ -19,10 +19,8 @@
 
 ;; (keg/connect! "spark://84.40.60.42:10000")
 
-(def sc keg/*sc*)
-
-(def orders (.textFile sc "/home/dan/emag/rec-engine-api.clojure/data/order_prods_2y.csv"))
-;; (def orders (.textFile sc "/home/dan/emag/rec-engine-api.clojure/data/order_prods.tsv"))
+(def orders (.textFile keg/*sc* "/home/dan/emag/rec-engine-api.clojure/data/order_prods_2y.csv"))
+;; (def orders (.textFile keg/*sc* "/home/dan/emag/rec-engine-api.clojure/data/order_prods.tsv"))
 
 
 (into [] (keg/rdd orders
@@ -71,6 +69,23 @@
                     (filter #(< 2 (second %)))
                     (take 5)))
       )
+
+
+(def occs (-> orders
+              (keg/rdd
+               (map read-string)
+               (map #(comb/combinations % 2))
+               (mapcat identity)
+               (map sort))
+              (keg/by-key :key identity
+                          :pre x/count
+                          :post (x/reduce +))))
+
+(into {} (keg/rdd
+          (filter #(< 2 (second %)))
+          (take 5)))
+
+(.saveAsObjectFile occs "~/emag/powderkeg-example/data/occs.bin")
 
 
 
