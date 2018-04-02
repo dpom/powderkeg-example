@@ -17,12 +17,13 @@
    [org.apache.spark.streaming Seconds StreamingContext]))
 
 
+
 (keg/connect! "local[*]")
 
 ;; (keg/connect! "spark://84.40.60.42:10000")
 
-(def orders (.textFile keg/*sc* "/home/dan/emag/rec-engine-api.clojure/data/order_prods_2y.csv"))
-;; (def orders (.textFile keg/*sc* "/home/dan/emag/rec-engine-api.clojure/data/order_prods.tsv"))
+;; (def orders (.textFile keg/*sc* "/home/dan/emag/rec-engine-api.clojure/data/order_prods_2y.csv"))
+(def orders (.textFile keg/*sc* "/home/dan/emag/rec-engine-api.clojure/data/order_prods.tsv"))
 
 
 (into [] (keg/rdd orders
@@ -78,12 +79,13 @@
                (map read-string)
                (map #(comb/combinations % 2))
                (mapcat identity)
-               (map sort))
+               (map sort)
+               (map vec))
               (keg/by-key :key identity
                           :pre x/count
                           :post (x/reduce +))))
 
-(into {} (keg/rdd
+(into {} (keg/rdd occs
           (filter #(< 2 (second %)))
           (take 5)))
 
@@ -91,8 +93,10 @@
 
 
 (with-open [w (io/writer "occurrences.csv")] 
-  (keg/rdd occs
-           (x/for [v %] (.write w (format "%d,%d,%d" (ffirst v) (second (first v)) (second v) ))))
-)
+  (keg/do-rdd occs []
+           (map (fn [v](.write w (format "%d,%d,%d\n" (ffirst v) (second (first v)) (second v) ))))))
 
-(keg/scomp)
+(with-open [w (io/writer "occurrences2.csv")] 
+  (keg/do-rdd occs []
+              (map (fn [[[k1 k2] v]](.write w (format "%d,%d,%d\n" k1 k2 v))))))
+
